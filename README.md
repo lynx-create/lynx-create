@@ -1,43 +1,28 @@
- name: Node.js CI
+ runs-on: ubuntu-latest
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  schedule:
-    - cron: '0 */4 * * *'
+strategy:
+  matrix:
+    node-version: [20.x]
 
-jobs:
-  build:
+steps:
+- name: Checkout repository
+  uses: actions/checkout@v3
 
-    runs-on: ubuntu-latest
+- name: Set up Node.js
+  uses: actions/setup-node@v3
+  with:
+    node-version: ${{ matrix.node-version }}
 
-    strategy:
-      matrix:
-        node-version: [20.x]
+- name: Install ffmpeg
+  run: |
+    sudo apt-get update
+    sudo apt-get install -y ffmpeg
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+- name: Install dependencies
+  run: |
+    npm install -g pm2
+    npm install
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Install ffmpeg
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ffmpeg
-
-    - name: Install dependencies
-      run: |
-        npm install -g pm2
-        npm install
-
-    - name: Start application with timeout
-      run: |
-        timeout 14520s npm run zokou
+- name: Start application with timeout
+  run: |
+    timeout 14520s npm run zokou
